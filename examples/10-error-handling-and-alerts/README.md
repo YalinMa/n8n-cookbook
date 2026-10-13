@@ -37,7 +37,7 @@ The four layers of error handling in n8n, from the smallest to the largest scope
 ## Setup
 
 1. Import **both** files: [`error-alert-workflow.json`](error-alert-workflow.json) and [`flaky-workflow-demo.json`](flaky-workflow-demo.json).
-2. *(Optional)* In **10a · Error Alert**, paste a Slack/Discord webhook URL into **Send Alert** and enable the node. You can also replace it with *Send Email*, *Telegram*, *Microsoft Teams*… You don't need to activate 10a. Error workflows run on their own.
+2. In **10a · Error Alert**, optionally paste a Slack/Discord webhook URL into **Send Alert** and enable the node (or replace it with *Send Email*, *Telegram*, *Microsoft Teams*…). Then **publish 10a**. In n8n 2.x an error workflow only runs if it is published; otherwise the failure is just written to the server log.
 3. **Connect them:** open **10b · Error Handling Demo** → **⋯ → Settings → Error Workflow** → choose **10a · Error Alert** → Save.
 4. Do the same for every important workflow you build from now on. One error workflow can serve all of them.
 
@@ -57,7 +57,7 @@ The run finishes **successfully**. The failure was handled.
 
 1. In **Settings**, set `failOnPurpose` to `true`.
 2. Error workflows only fire for **production** runs (trigger/schedule/webhook), not when you click *Test workflow*. To see the alert in action:
-   - Replace the Manual Trigger with a **Schedule Trigger** (every minute) and activate the workflow for one minute, **or**
+   - Replace the Manual Trigger with a **Schedule Trigger** (every minute) and publish the workflow for one minute, **or**
    - Open **10a**, click **Test workflow** and look at the sample data the Error Trigger shows, to preview the message format.
 3. The alert looks like:
 
@@ -91,6 +91,6 @@ The run finishes **successfully**. The failure was handled.
 
 | Symptom | Fix |
 |---|---|
-| Error workflow never runs | It doesn't run for manual test executions. Also check the failing workflow's *Settings → Error Workflow*. |
+| Error workflow never runs | Three usual causes: 10a isn't **published**; the failure happened in a manual test run; or the failing workflow's *Settings → Error Workflow* isn't set. |
 | `execution.url` is empty | Set `N8N_EDITOR_BASE_URL` on self-hosted instances. |
 | Node has no error output | Set *Settings → On Error* to **Continue (using error output)**. *Continue* (regular output) mixes errors into the normal output instead. |

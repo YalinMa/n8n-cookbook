@@ -77,3 +77,75 @@ const save = (name, wf) => writeFileSync(join(out, `variant-${name}.json`), JSON
     data: { apiKey: 'sk-test-not-a-real-key', url: `http://127.0.0.1:${process.env.MOCK_OPENAI_PORT || 5690}/v1` },
   }]));
 }
+
+// 12: a linked pair. 12b's "Workflow" dropdown must point at 12a's id, which
+// only exists after import, so both get fixed test ids.
+{
+  const child = load('12-reusable-notification-subworkflow/notification-subworkflow.json');
+  child.id = 'cookbookvariant12a';
+  child.name += ' [test: linked]';
+  save('12a', child);
+  const parent = load('12-reusable-notification-subworkflow/order-events-workflow.json');
+  parent.id = 'cookbookvariant12b';
+  parent.name += ' [test: linked]';
+  parent.nodes.find((n) => n.name === 'Notify via Sub-workflow').parameters.workflowId.value = child.id;
+  save('12b', parent);
+}
+
+// 14 and 18: read the sample files from the working tree (served locally)
+// instead of raw.githubusercontent.com, so uncommitted changes are tested.
+const FILES = `http://127.0.0.1:${process.env.FILES_PORT || 5699}/`;
+for (const [folder, name] of [['14-clean-and-dedupe-contact-list', '14'], ['18-pdf-invoice-parser', '18']]) {
+  const raw = readFileSync(join(root, 'examples', folder, 'workflow.json'), 'utf8')
+    .replaceAll('https://raw.githubusercontent.com/YalinMa/n8n-cookbook/main/examples/', FILES);
+  const wf = JSON.parse(raw);
+  wf.id = `cookbookvariant${name}`;
+  wf.name += ' [test: local file]';
+  save(name, wf);
+}
+
+// 15: AI agent wired to the mock OpenAI credential.
+{
+  const wf = load('15-ai-agent-with-tools-and-memory/workflow.json');
+  wf.id = 'cookbookvariant15';
+  wf.name += ' [test: mock OpenAI]';
+  wf.nodes.find((n) => n.name === 'OpenAI Chat Model').credentials = {
+    openAiApi: { id: 'cookbookmockai01', name: 'Mock OpenAI' },
+  };
+  save('15', wf);
+}
+
+// 19: the one-time "create table" step runs from a webhook, because the
+// Data Tables module is only loaded by a running n8n server, not by `n8n execute`.
+{
+  const wf = load('19-mini-crm-with-data-tables/workflow.json');
+  wf.id = 'cookbookvariant19';
+  wf.name += ' [test: setup webhook]';
+  const setup = wf.nodes.find((n) => n.name === 'Run Once: Create Table');
+  Object.assign(setup, {
+    type: 'n8n-nodes-base.webhook', typeVersion: 2,
+    parameters: { path: 'crm/setup', options: {} },
+    webhookId: '19000000-0000-4000-8000-0000000000cc',
+  });
+  save('19', wf);
+}
+
+// 10 live: a real production failure must start the (published) error workflow.
+// 10b fails on purpose, is started by a webhook, and has 10a set as its Error Workflow.
+{
+  const alert = load('10-error-handling-and-alerts/error-alert-workflow.json');
+  alert.id = 'cookbookvariant10alive';
+  alert.name += ' [test: live]';
+  save('10a-live', alert);
+  const demo = load('10-error-handling-and-alerts/flaky-workflow-demo.json');
+  demo.id = 'cookbookvariant10blive';
+  demo.name = '10b · Error Handling Demo [test: live failure]';
+  demo.settings.errorWorkflow = alert.id;
+  demo.nodes.find((n) => n.name === 'Settings').parameters.assignments.assignments[0].value = true;
+  Object.assign(demo.nodes.find((n) => n.name === 'Manual Trigger'), {
+    type: 'n8n-nodes-base.webhook', typeVersion: 2,
+    parameters: { path: 'fail-demo', options: {} },
+    webhookId: '10b00000-0000-4000-8000-0000000000cc',
+  });
+  save('10b-live', demo);
+}

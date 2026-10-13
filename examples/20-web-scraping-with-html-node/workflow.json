@@ -1,0 +1,195 @@
+{
+  "name": "20 · Web Scraping with the HTML Node",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 20 · Web Scraping with the HTML Node\nScrape a product catalogue that has no API: [books.toscrape.com](https://books.toscrape.com), a sandbox site made for practising scraping.\n\n1. **Page URLs** lists the pages to visit (set the number in **Settings**)\n2. **Fetch Page** downloads them **one per second** (*Options → Batching*)\n3. **Extract Books** uses **CSS selectors** to grab title, price, rating and stock\n4. **One Item per Book** zips the arrays into clean items\n5. Keep 4★+ books, sort by price and export a CSV\n\n⚖️ Only scrape sites that allow it: check their terms and `robots.txt`, go slowly, and prefer an official API when there is one.",
+        "height": 420,
+        "width": 540
+      },
+      "id": "20000000-0000-4000-8000-000000000001",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-80, -480]
+    },
+    {
+      "parameters": {},
+      "id": "20000000-0000-4000-8000-000000000002",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 100]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "20000000-0000-4000-8000-000000000101", "name": "pages", "value": 3, "type": "number" },
+            { "id": "20000000-0000-4000-8000-000000000102", "name": "minRating", "value": 4, "type": "number" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "20000000-0000-4000-8000-000000000003",
+      "name": "Settings",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [220, 100]
+    },
+    {
+      "parameters": {
+        "jsCode": "const { pages } = $input.first().json;\nreturn Array.from({ length: pages }, (_, i) => ({\n  json: { url: `https://books.toscrape.com/catalogue/page-${i + 1}.html` },\n}));"
+      },
+      "id": "20000000-0000-4000-8000-000000000004",
+      "name": "Page URLs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 100]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 1000
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "20000000-0000-4000-8000-000000000005",
+      "name": "Fetch Page",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [660, 100]
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            { "key": "title", "cssSelector": "article.product_pod h3 a", "returnValue": "attribute", "attribute": "title", "returnArray": true },
+            { "key": "price", "cssSelector": "article.product_pod .price_color", "returnArray": true },
+            { "key": "rating", "cssSelector": "article.product_pod p.star-rating", "returnValue": "attribute", "attribute": "class", "returnArray": true },
+            { "key": "availability", "cssSelector": "article.product_pod .availability", "returnArray": true },
+            { "key": "link", "cssSelector": "article.product_pod h3 a", "returnValue": "attribute", "attribute": "href", "returnArray": true }
+          ]
+        },
+        "options": {}
+      },
+      "id": "20000000-0000-4000-8000-000000000006",
+      "name": "Extract Books",
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [880, 100]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Each page item holds 5 parallel arrays (title[], price[], …). Turn them into one item per book.\nconst words = { One: 1, Two: 2, Three: 3, Four: 4, Five: 5 };\nconst out = [];\n\n$input.all().forEach((page, i) => {\n  const pageUrl = $('Page URLs').all()[i].json.url;\n  const { title, price, rating, availability, link } = page.json;\n  title.forEach((t, j) => {\n    out.push({\n      json: {\n        title: t,\n        priceGBP: Number(price[j].replace(/[^\\d.]/g, '')),\n        rating: words[rating[j].replace('star-rating', '').trim()] ?? null,\n        inStock: /in stock/i.test(availability[j]),\n        // links are relative to the page's folder (the Code node has no URL class)\n        url: pageUrl.replace(/[^/]*$/, '') + link[j],\n      },\n    });\n  });\n});\n\nreturn out;"
+      },
+      "id": "20000000-0000-4000-8000-000000000007",
+      "name": "One Item per Book",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1100, 100]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "20000000-0000-4000-8000-000000000103",
+              "leftValue": "={{ $json.rating }}",
+              "rightValue": "={{ $('Settings').first().json.minRating }}",
+              "operator": { "type": "number", "operation": "gte" }
+            },
+            {
+              "id": "20000000-0000-4000-8000-000000000104",
+              "leftValue": "={{ $json.inStock }}",
+              "rightValue": "",
+              "operator": { "type": "boolean", "operation": "true", "singleValue": true }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "20000000-0000-4000-8000-000000000008",
+      "name": "Rated 4★+ and In Stock",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [1320, 100]
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            { "fieldName": "priceGBP" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "20000000-0000-4000-8000-000000000009",
+      "name": "Cheapest First",
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [1540, 100]
+    },
+    {
+      "parameters": {
+        "options": {
+          "fileName": "=books-{{ $now.toFormat('yyyy-MM-dd') }}.csv"
+        }
+      },
+      "id": "20000000-0000-4000-8000-000000000010",
+      "name": "Export CSV",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [1760, 100]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{ "node": "Settings", "type": "main", "index": 0 }]]
+    },
+    "Settings": {
+      "main": [[{ "node": "Page URLs", "type": "main", "index": 0 }]]
+    },
+    "Page URLs": {
+      "main": [[{ "node": "Fetch Page", "type": "main", "index": 0 }]]
+    },
+    "Fetch Page": {
+      "main": [[{ "node": "Extract Books", "type": "main", "index": 0 }]]
+    },
+    "Extract Books": {
+      "main": [[{ "node": "One Item per Book", "type": "main", "index": 0 }]]
+    },
+    "One Item per Book": {
+      "main": [[{ "node": "Rated 4★+ and In Stock", "type": "main", "index": 0 }]]
+    },
+    "Rated 4★+ and In Stock": {
+      "main": [[{ "node": "Cheapest First", "type": "main", "index": 0 }]]
+    },
+    "Cheapest First": {
+      "main": [[{ "node": "Export CSV", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "tags": []
+}

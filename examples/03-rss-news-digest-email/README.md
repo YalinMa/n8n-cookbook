@@ -38,14 +38,14 @@ Manual Trigger ─┘    (30 items)          (Filter)          (Limit)      (Agg
 
 Click **Test workflow** and check your inbox. Watch the item counts on the connections: about 30 → about 15 → 10 → **1**.
 
-Then **activate** the workflow so it runs on weekdays at 08:00.
+Then **publish** the workflow so it runs on weekdays at 08:00.
 
 ## How it works
 
 | Node | What it does |
 |---|---|
 | **Weekdays 08:00** | Schedule Trigger in *Custom (Cron)* mode. |
-| **Read RSS Feed** | Fetches the feed. Each article becomes one item with `title`, `link`, `isoDate`, `content`… |
+| **Read RSS Feed** | Fetches the feed. Each article becomes one item with `title`, `link`, `isoDate`, `content`… *Settings → Retry On Fail* (3 tries, 5 s apart) rides out short network hiccups. |
 | **Only Last 24 Hours** | Filter node. It keeps items where `isoDate` is *after* now − 1 day. |
 | **Top 10** | Limit node. It keeps the first 10 items. |
 | **Combine Into One** | Aggregate node, *All Item Data* mode. 10 items become 1 item with an `articles` array. |

@@ -1,0 +1,46 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Length 968 >>
+stream
+BT /F1 18 Tf 56 780 Td (ACME Coffee Supplies GmbH) Tj ET
+BT /F1 10 Tf 56 752 Td (Musterstrasse 1, 10115 Berlin, Germany) Tj ET
+BT /F1 16 Tf 56 712 Td (INVOICE) Tj ET
+BT /F1 11 Tf 56 686 Td (Invoice Number: INV-2026-0042) Tj ET
+BT /F1 11 Tf 56 665 Td (Invoice Date: 2026-10-01) Tj ET
+BT /F1 11 Tf 56 644 Td (Due Date: 2026-10-31) Tj ET
+BT /F1 11 Tf 56 623 Td (Bill To: Cookbook Cafe Ltd, 12 Example Street, Berlin) Tj ET
+BT /F1 11 Tf 56 581 Td (Description | Qty | Unit Price | Amount) Tj ET
+BT /F1 11 Tf 56 560 Td (Espresso beans 1kg | 10 | 24.50 | 245.00) Tj ET
+BT /F1 11 Tf 56 539 Td (Paper cups \(pack of 100\) | 5 | 8.90 | 44.50) Tj ET
+BT /F1 11 Tf 56 518 Td (Oat milk 1L | 24 | 2.10 | 50.40) Tj ET
+BT /F1 11 Tf 56 476 Td (Subtotal: 339.90 EUR) Tj ET
+BT /F1 11 Tf 56 455 Td (VAT 19%: 64.58 EUR) Tj ET
+BT /F1 13 Tf 56 434 Td (Total Due: 404.48 EUR) Tj ET
+BT /F1 9 Tf 56 390 Td (Payment: bank transfer to IBAN DE00 0000 0000 0000 0000 00 \(fictional example\)) Tj ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000338 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1357
+%%EOF

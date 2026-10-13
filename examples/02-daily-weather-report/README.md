@@ -27,7 +27,7 @@ Manual Trigger ──┘    (city)     (Open-Meteo)     (JavaScript)       (Slac
 3. *(Optional)* To get the message in chat:
    - **Slack:** create an [Incoming Webhook](https://api.slack.com/messaging/webhooks) and copy its URL.
    - **Discord:** *Channel settings → Integrations → Webhooks → New Webhook → Copy URL*.
-   - Paste the URL into **Send to Chat → URL**. Then right-click the node and choose **Activate** (it ships disabled so the example runs without a URL).
+   - Paste the URL into **Send to Chat → URL**. Then enable the node: right-click → **Enable**, or select it and press `D` (it ships disabled so the example runs without a URL).
 
    The body sends both `text` (Slack) and `content` (Discord), so the same node works for either.
 
@@ -43,7 +43,7 @@ Good morning! Weather for Berlin today (2026-10-13):
 👉 No umbrella needed.
 ```
 
-To run it every day, **activate** the workflow. Only the Schedule Trigger runs in production; the Manual Trigger is ignored.
+To run it every day, **publish** the workflow. Only the Schedule Trigger runs in production; the Manual Trigger is ignored.
 
 ## How it works
 

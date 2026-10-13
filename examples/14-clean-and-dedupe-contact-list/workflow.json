@@ -1,0 +1,252 @@
+{
+  "name": "14 · Clean & Deduplicate a Contact List",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 14 · Clean & Deduplicate a Contact List\nReal-world spreadsheets are messy. This workflow downloads a CSV and:\n\n1. **parses** it into items (*Extract from File*)\n2. **normalises** names, emails, phones and dates\n3. **rejects** rows without a name or with an invalid email\n4. **removes duplicates** by email\n5. exports a clean CSV\n\nThe sample file (13 rows) has extra spaces, mixed case, two date formats, broken emails and duplicates. Point **Settings → csvUrl** at your own file, or swap the download for Google Drive, an email attachment or a form upload.",
+        "height": 400,
+        "width": 520
+      },
+      "id": "14000000-0000-4000-8000-000000000001",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-80, -440]
+    },
+    {
+      "parameters": {},
+      "id": "14000000-0000-4000-8000-000000000002",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 100]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "14000000-0000-4000-8000-000000000101",
+              "name": "csvUrl",
+              "value": "https://raw.githubusercontent.com/YalinMa/n8n-cookbook/main/examples/14-clean-and-dedupe-contact-list/sample-contacts.csv",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "14000000-0000-4000-8000-000000000003",
+      "name": "Settings",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [220, 100]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.csvUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "14000000-0000-4000-8000-000000000004",
+      "name": "Download CSV",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 100]
+    },
+    {
+      "parameters": {
+        "options": {
+          "includeEmptyCells": true
+        }
+      },
+      "id": "14000000-0000-4000-8000-000000000005",
+      "name": "Parse CSV",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [660, 100]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "14000000-0000-4000-8000-000000000102",
+              "name": "name",
+              "value": "={{ ($json['Full Name'] ?? '').trim().replace(/\\s+/g, ' ').toLowerCase().replace(/(^|[\\s-])\\S/g, s => s.toUpperCase()) }}",
+              "type": "string"
+            },
+            {
+              "id": "14000000-0000-4000-8000-000000000103",
+              "name": "email",
+              "value": "={{ ($json['E-mail'] ?? '').trim().toLowerCase() }}",
+              "type": "string"
+            },
+            {
+              "id": "14000000-0000-4000-8000-000000000104",
+              "name": "phone",
+              "value": "={{ ($json.Phone ?? '').replace(/[^\\d+]/g, '') }}",
+              "type": "string"
+            },
+            {
+              "id": "14000000-0000-4000-8000-000000000105",
+              "name": "company",
+              "value": "={{ ($json.Company ?? '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "14000000-0000-4000-8000-000000000106",
+              "name": "signedUp",
+              "value": "={{ ($json['Signed Up'] ?? '').includes('/') ? DateTime.fromFormat($json['Signed Up'], 'MM/dd/yyyy').toISODate() : DateTime.fromISO($json['Signed Up']).toISODate() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "14000000-0000-4000-8000-000000000006",
+      "name": "Normalize Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [880, 100]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "14000000-0000-4000-8000-000000000107",
+              "leftValue": "={{ $json.name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "14000000-0000-4000-8000-000000000108",
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "^[^@\\s]+@[^@\\s]+\\.[a-z]{2,}$",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "14000000-0000-4000-8000-000000000007",
+      "name": "Valid Contact?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [1100, 100]
+    },
+    {
+      "parameters": {
+        "compare": "selectedFields",
+        "fieldsToCompare": "email",
+        "options": {}
+      },
+      "id": "14000000-0000-4000-8000-000000000008",
+      "name": "Remove Duplicate Emails",
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [1340, 0]
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            { "fieldName": "name" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "14000000-0000-4000-8000-000000000009",
+      "name": "Sort by Name",
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [1560, 0]
+    },
+    {
+      "parameters": {
+        "options": {
+          "fileName": "clean-contacts.csv"
+        }
+      },
+      "id": "14000000-0000-4000-8000-000000000010",
+      "name": "Export Clean CSV",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [1780, 0]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "14000000-0000-4000-8000-000000000109",
+              "name": "reason",
+              "value": "={{ !$json.name ? 'missing name' : !$json.email ? 'missing email' : 'invalid email: ' + $json.email }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "14000000-0000-4000-8000-000000000011",
+      "name": "Rejected Rows",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1340, 220]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{ "node": "Settings", "type": "main", "index": 0 }]]
+    },
+    "Settings": {
+      "main": [[{ "node": "Download CSV", "type": "main", "index": 0 }]]
+    },
+    "Download CSV": {
+      "main": [[{ "node": "Parse CSV", "type": "main", "index": 0 }]]
+    },
+    "Parse CSV": {
+      "main": [[{ "node": "Normalize Fields", "type": "main", "index": 0 }]]
+    },
+    "Normalize Fields": {
+      "main": [[{ "node": "Valid Contact?", "type": "main", "index": 0 }]]
+    },
+    "Valid Contact?": {
+      "main": [
+        [{ "node": "Remove Duplicate Emails", "type": "main", "index": 0 }],
+        [{ "node": "Rejected Rows", "type": "main", "index": 0 }]
+      ]
+    },
+    "Remove Duplicate Emails": {
+      "main": [[{ "node": "Sort by Name", "type": "main", "index": 0 }]]
+    },
+    "Sort by Name": {
+      "main": [[{ "node": "Export Clean CSV", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "tags": []
+}

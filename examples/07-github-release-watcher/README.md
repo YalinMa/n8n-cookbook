@@ -24,7 +24,7 @@ Manual Trigger ─┘     (3 items)        (GitHub REST API)     (static-data me
 1. Import [`workflow.json`](workflow.json).
 2. Edit the list in **Repos to Watch** (`owner/name`, for example `facebook/react`).
 3. *(Optional)* Paste a Slack/Discord webhook URL into **Send to Chat** and enable it.
-4. **Activate** the workflow.
+4. **Publish** the workflow.
 
 > **GitHub rate limit.** Unauthenticated requests are limited to 60/hour per IP. With 3 repos checked hourly that's fine. If you watch many repos, create a GitHub credential (*Header Auth*: `Authorization: Bearer <token>`) on **Get Latest Release** for 5 000/hour.
 
@@ -37,7 +37,7 @@ Click **Test workflow**. Because manual runs don't keep memory, **every** releas
 https://github.com/n8n-io/n8n/releases/tag/n8n@2.x.y
 ```
 
-In production (workflow active), the first run stores the current tags. After that you only hear about releases published since the last check.
+In production (workflow published), the first run stores the current tags. After that you only hear about releases published since the last check.
 
 ## How it works
 

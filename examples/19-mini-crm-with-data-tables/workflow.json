@@ -1,0 +1,536 @@
+{
+  "name": "19 · Mini CRM with Data Tables",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 19 · Mini CRM with Data Tables\nn8n has a **built-in database**: *Data Tables*. No Google Sheets, Airtable or SQL server needed.\n\nThis workflow is a tiny contacts API:\n- `POST /webhook/crm/contacts` → add a contact, or update it if the email already exists (**upsert**). Fields you leave out keep their stored value\n- `GET  /webhook/crm/contacts?stage=lead` → list contacts, optionally filtered by stage\n\n**First:** click ▶ on **Run Once: Create Table** to create the `cookbook_contacts` table (it's safe to run again). You can browse the table under *Overview → Data tables*.",
+        "height": 380,
+        "width": 540
+      },
+      "id": "19000000-0000-4000-8000-000000000001",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -560
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "19000000-0000-4000-8000-000000000002",
+      "name": "Run Once: Create Table",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "table",
+        "operation": "create",
+        "tableName": "cookbook_contacts",
+        "columns": {
+          "column": [
+            {
+              "name": "email",
+              "type": "string"
+            },
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "company",
+              "type": "string"
+            },
+            {
+              "name": "stage",
+              "type": "string"
+            },
+            {
+              "name": "notes",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {
+          "createIfNotExists": true
+        }
+      },
+      "id": "19000000-0000-4000-8000-000000000003",
+      "name": "Create Contacts Table",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        220,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "crm/contacts",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "19000000-0000-4000-8000-000000000004",
+      "name": "Save Contact",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        100
+      ],
+      "webhookId": "19000000-0000-4000-8000-0000000000aa"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "19000000-0000-4000-8000-000000000101",
+              "name": "email",
+              "value": "={{ ($json.body.email ?? '').trim().toLowerCase() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {},
+        "includeOtherFields": false
+      },
+      "id": "19000000-0000-4000-8000-000000000005",
+      "name": "Clean Input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "19000000-0000-4000-8000-000000000106",
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "^[^@\\s]+@[^@\\s]+\\.[a-z]{2,}$",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "19000000-0000-4000-8000-000000000006",
+      "name": "Valid Email?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        440,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "cookbook_contacts",
+          "mode": "name"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "email",
+              "keyValue": "={{ $json.email }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email": "={{ $json.email }}",
+            "name": "={{ $json.name }}",
+            "company": "={{ $json.company }}",
+            "stage": "={{ $json.stage }}",
+            "notes": "={{ $json.notes }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "stage",
+              "displayName": "stage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "19000000-0000-4000-8000-000000000007",
+      "name": "Upsert Contact",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, contact: { id: $json.id, email: $json.email, name: $json.name, company: $json.company, stage: $json.stage, updatedAt: $json.updatedAt } }) }}",
+        "options": {}
+      },
+      "id": "19000000-0000-4000-8000-000000000008",
+      "name": "Reply: Saved",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1340,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: false, error: 'A valid email is required.' }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "19000000-0000-4000-8000-000000000009",
+      "name": "Reply: Bad Request",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        680,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "path": "crm/contacts",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "19000000-0000-4000-8000-000000000010",
+      "name": "List Contacts",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        420
+      ],
+      "webhookId": "19000000-0000-4000-8000-0000000000bb"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "cookbook_contacts",
+          "mode": "name"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "id": "19000000-0000-4000-8000-000000000011",
+      "name": "Get All Rows",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        220,
+        420
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Optional ?stage=… filter, then one response item.\nconst stage = $('List Contacts').first().json.query.stage;\nconst contacts = $input.all()\n  .map((item) => item.json)\n  .filter((row) => row.email) // ignore the empty item we get when the table is empty\n  .filter((row) => !stage || row.stage === stage)\n  .map(({ id, email, name, company, stage, notes, updatedAt }) => ({ id, email, name, company, stage, notes, updatedAt }));\n\nreturn [{ json: { count: contacts.length, stage: stage ?? 'all', contacts } }];"
+      },
+      "id": "19000000-0000-4000-8000-000000000012",
+      "name": "Filter & Shape",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "19000000-0000-4000-8000-000000000013",
+      "name": "Reply: Contacts",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        660,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "cookbook_contacts",
+          "mode": "name"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "email",
+              "keyValue": "={{ $json.email }}"
+            }
+          ]
+        },
+        "limit": 1,
+        "options": {}
+      },
+      "id": "19000000-0000-4000-8000-000000000014",
+      "name": "Find Existing Contact",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        680,
+        0
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "19000000-0000-4000-8000-000000000107",
+              "name": "email",
+              "value": "={{ $('Clean Input').first().json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "19000000-0000-4000-8000-000000000108",
+              "name": "name",
+              "value": "={{ ($('Save Contact').first().json.body.name ?? $json.name ?? '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "19000000-0000-4000-8000-000000000109",
+              "name": "company",
+              "value": "={{ ($('Save Contact').first().json.body.company ?? $json.company ?? '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "19000000-0000-4000-8000-000000000110",
+              "name": "stage",
+              "value": "={{ ['lead', 'qualified', 'customer', 'lost'].includes($('Save Contact').first().json.body.stage) ? $('Save Contact').first().json.body.stage : ($json.stage || 'lead') }}",
+              "type": "string"
+            },
+            {
+              "id": "19000000-0000-4000-8000-000000000111",
+              "name": "notes",
+              "value": "={{ $('Save Contact').first().json.body.notes ?? $json.notes ?? '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "19000000-0000-4000-8000-000000000015",
+      "name": "Merge With Existing",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        900,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Run Once: Create Table": {
+      "main": [
+        [
+          {
+            "node": "Create Contacts Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Contact": {
+      "main": [
+        [
+          {
+            "node": "Clean Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Input": {
+      "main": [
+        [
+          {
+            "node": "Valid Email?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid Email?": {
+      "main": [
+        [
+          {
+            "node": "Find Existing Contact",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply: Bad Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Contact": {
+      "main": [
+        [
+          {
+            "node": "Reply: Saved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Contacts": {
+      "main": [
+        [
+          {
+            "node": "Get All Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Rows": {
+      "main": [
+        [
+          {
+            "node": "Filter & Shape",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter & Shape": {
+      "main": [
+        [
+          {
+            "node": "Reply: Contacts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Existing Contact": {
+      "main": [
+        [
+          {
+            "node": "Merge With Existing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge With Existing": {
+      "main": [
+        [
+          {
+            "node": "Upsert Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "tags": []
+}

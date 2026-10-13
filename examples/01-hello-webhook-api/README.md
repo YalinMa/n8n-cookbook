@@ -47,7 +47,7 @@ POST /webhook/hello  ──▶  Webhook  ──▶  Build Greeting  ──▶  R
 
 4. Click each node in the editor to see its input and output.
 
-To make the endpoint permanent, **activate** the workflow (toggle at the top). Then call `/webhook/hello` (no `-test`) as often as you like.
+To make the endpoint permanent, **publish** the workflow (*Publish* button at the top). Then call `/webhook/hello` (no `-test`) as often as you like.
 
 ## How it works
 
@@ -67,6 +67,6 @@ To make the endpoint permanent, **activate** the workflow (toggle at the top). T
 
 | Symptom | Fix |
 |---|---|
-| `404 The requested webhook "hello" is not registered` | For `/webhook-test/…`, click **Test workflow** first; the test URL works for one call only. For `/webhook/…`, the workflow must be **active**. |
+| `404 The requested webhook "hello" is not registered` | For `/webhook-test/…`, click **Test workflow** first; the test URL works for one call only. For `/webhook/…`, the workflow must be **published**. |
 | Response is `{"message":"Workflow was started"}` | The Webhook node's *Respond* option was changed. Set it back to **Using 'Respond to Webhook' node**. |
 | `name` is always `stranger` | Send `Content-Type: application/json` so n8n parses the body. |

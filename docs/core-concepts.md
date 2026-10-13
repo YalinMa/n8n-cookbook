@@ -64,7 +64,7 @@ API keys, passwords and OAuth tokens live in n8n's encrypted **credential store*
 
 ## 5. Test runs vs. production runs
 
-| | Test (*Test workflow* button) | Production (workflow **Active**) |
+| | Test (*Test workflow* button) | Production (workflow **published**) |
 |---|---|---|
 | Purpose | Building and debugging | Running unattended |
 | Webhooks | `/webhook-test/…`, listens for one call | `/webhook/…`, always listening |

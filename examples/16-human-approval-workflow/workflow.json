@@ -1,0 +1,537 @@
+{
+  "name": "16 · Human-in-the-Loop Expense Approval",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 16 · Human-in-the-Loop Approval\nSome steps need a person. An expense request arrives by webhook:\n\n- **≤ 100** → approved automatically\n- **> 100** → the workflow sends the manager two links (*Approve* / *Reject*) and then **pauses** in the **Wait for Decision** node. It can wait for minutes or weeks without using resources.\n- When the manager clicks a link, the *same execution* resumes and continues down the right branch.\n\n`$execution.resumeUrl` is the unique (signed) URL that wakes up this exact execution. n8n adds a `?signature=…` token to it, so extra parameters are appended with `&`.\n\nTo really notify someone, set a webhook URL in **Notify Manager** and enable it (or use Email/Slack).",
+        "height": 420,
+        "width": 520
+      },
+      "id": "16000000-0000-4000-8000-000000000001",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -480
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "expense",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "16000000-0000-4000-8000-000000000002",
+      "name": "Expense Request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        100
+      ],
+      "webhookId": "16000000-0000-4000-8000-0000000000aa"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "16000000-0000-4000-8000-000000000101",
+              "name": "employee",
+              "value": "={{ $json.body.employee }}",
+              "type": "string"
+            },
+            {
+              "id": "16000000-0000-4000-8000-000000000102",
+              "name": "amount",
+              "value": "={{ Number($json.body.amount) }}",
+              "type": "number"
+            },
+            {
+              "id": "16000000-0000-4000-8000-000000000103",
+              "name": "description",
+              "value": "={{ $json.body.description }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "16000000-0000-4000-8000-000000000003",
+      "name": "Read Request",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "16000000-0000-4000-8000-000000000104",
+              "leftValue": "={{ $json.amount }}",
+              "rightValue": 100,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "16000000-0000-4000-8000-000000000004",
+      "name": "Over 100?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        440,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "16000000-0000-4000-8000-000000000105",
+              "name": "approveUrl",
+              "value": "={{ $execution.resumeUrl }}&decision=approve",
+              "type": "string"
+            },
+            {
+              "id": "16000000-0000-4000-8000-000000000106",
+              "name": "rejectUrl",
+              "value": "={{ $execution.resumeUrl }}&decision=reject",
+              "type": "string"
+            },
+            {
+              "id": "16000000-0000-4000-8000-000000000107",
+              "name": "text",
+              "value": "=💶 Expense approval needed\n{{ $json.employee }} requests {{ $json.amount.toFixed(2) }} € for \"{{ $json.description }}\".\n✅ Approve: {{ $execution.resumeUrl }}&decision=approve\n❌ Reject: {{ $execution.resumeUrl }}&decision=reject",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "16000000-0000-4000-8000-000000000005",
+      "name": "Build Approval Links",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        680,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hooks.slack.com/services/REPLACE/WITH/YOUR-WEBHOOK",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.text, content: $json.text }) }}",
+        "options": {}
+      },
+      "id": "16000000-0000-4000-8000-000000000006",
+      "name": "Notify Manager",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        0
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: 'pending_approval', message: 'Your manager has been asked to approve this expense.', approveUrl: $json.approveUrl, rejectUrl: $json.rejectUrl }) }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "id": "16000000-0000-4000-8000-000000000007",
+      "name": "Reply: Pending",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "16000000-0000-4000-8000-000000000008",
+      "name": "Wait for Decision",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1340,
+        0
+      ],
+      "webhookId": "16000000-0000-4000-8000-0000000000bb"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "16000000-0000-4000-8000-000000000108",
+              "leftValue": "={{ $json.query.decision }}",
+              "rightValue": "approve",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "16000000-0000-4000-8000-000000000009",
+      "name": "Approved?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1560,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "16000000-0000-4000-8000-000000000109",
+              "name": "status",
+              "value": "approved",
+              "type": "string"
+            },
+            {
+              "id": "16000000-0000-4000-8000-000000000110",
+              "name": "employee",
+              "value": "={{ $('Read Request').item.json.employee }}",
+              "type": "string"
+            },
+            {
+              "id": "16000000-0000-4000-8000-000000000111",
+              "name": "amount",
+              "value": "={{ $('Read Request').item.json.amount }}",
+              "type": "number"
+            },
+            {
+              "id": "16000000-0000-4000-8000-000000000112",
+              "name": "decidedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "16000000-0000-4000-8000-000000000010",
+      "name": "Mark Approved",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1800,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "16000000-0000-4000-8000-000000000113",
+              "name": "status",
+              "value": "rejected",
+              "type": "string"
+            },
+            {
+              "id": "16000000-0000-4000-8000-000000000114",
+              "name": "employee",
+              "value": "={{ $('Read Request').item.json.employee }}",
+              "type": "string"
+            },
+            {
+              "id": "16000000-0000-4000-8000-000000000115",
+              "name": "amount",
+              "value": "={{ $('Read Request').item.json.amount }}",
+              "type": "number"
+            },
+            {
+              "id": "16000000-0000-4000-8000-000000000116",
+              "name": "decidedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "16000000-0000-4000-8000-000000000011",
+      "name": "Mark Rejected",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1800,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "16000000-0000-4000-8000-000000000117",
+              "name": "status",
+              "value": "auto_approved",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "16000000-0000-4000-8000-000000000012",
+      "name": "Auto-approve",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        680,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: $json.status, message: 'Expenses up to 100 € are approved automatically.' }) }}",
+        "options": {}
+      },
+      "id": "16000000-0000-4000-8000-000000000013",
+      "name": "Reply: Approved",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        900,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "=<!doctype html><meta charset=\"utf-8\"><title>Expense approved</title><body style=\"font-family:system-ui;padding:40px;text-align:center\"><h1>✅ Expense approved</h1><p>{{ $json.employee }} · {{ $json.amount.toFixed(2) }} €</p><p style=\"color:#888\">You can close this tab.</p></body>",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "id": "16000000-0000-4000-8000-000000000014",
+      "name": "Confirm Approval",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2020,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "=<!doctype html><meta charset=\"utf-8\"><title>Expense rejected</title><body style=\"font-family:system-ui;padding:40px;text-align:center\"><h1>❌ Expense rejected</h1><p>{{ $json.employee }} · {{ $json.amount.toFixed(2) }} €</p><p style=\"color:#888\">You can close this tab.</p></body>",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "id": "16000000-0000-4000-8000-000000000015",
+      "name": "Confirm Rejection",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2020,
+        100
+      ]
+    }
+  ],
+  "connections": {
+    "Expense Request": {
+      "main": [
+        [
+          {
+            "node": "Read Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Request": {
+      "main": [
+        [
+          {
+            "node": "Over 100?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Over 100?": {
+      "main": [
+        [
+          {
+            "node": "Build Approval Links",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Auto-approve",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Approval Links": {
+      "main": [
+        [
+          {
+            "node": "Notify Manager",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Manager": {
+      "main": [
+        [
+          {
+            "node": "Reply: Pending",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply: Pending": {
+      "main": [
+        [
+          {
+            "node": "Wait for Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for Decision": {
+      "main": [
+        [
+          {
+            "node": "Approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved?": {
+      "main": [
+        [
+          {
+            "node": "Mark Approved",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mark Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto-approve": {
+      "main": [
+        [
+          {
+            "node": "Reply: Approved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Approved": {
+      "main": [
+        [
+          {
+            "node": "Confirm Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Rejected": {
+      "main": [
+        [
+          {
+            "node": "Confirm Rejection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "tags": []
+}

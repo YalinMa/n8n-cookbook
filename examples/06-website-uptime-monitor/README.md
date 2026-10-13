@@ -27,7 +27,7 @@ Manual Trigger ──┘     (4 items)       (never        (isUp, problem)      
 
 1. Import [`workflow.json`](workflow.json).
 2. Edit the list in **Sites to Check**. Each site is one line with a `name` and a `url`. Two demo entries are broken on purpose (`httpbin.org/status/503` and a `.invalid` domain). Delete them once you've seen the alert work.
-3. *(Optional)* Paste a Slack/Discord incoming-webhook URL into **Send Alert**, then enable the node (right-click → **Activate**). See [example 02](../02-daily-weather-report/README.md#setup) for how to get a webhook URL.
+3. *(Optional)* Paste a Slack/Discord incoming-webhook URL into **Send Alert**, then enable the node (right-click → **Enable**, or press `D`). See [example 02](../02-daily-weather-report/README.md#setup) for how to get a webhook URL.
 
 ## Try it
 
@@ -41,7 +41,7 @@ Click **Test workflow**. In **Build Alert** you'll see:
 
 (The exact network error text depends on your system and network: `ENOTFOUND`, a TLS error, or a timeout.)
 
-Activate the workflow to check every 5 minutes.
+Publish the workflow to check every 5 minutes.
 
 ## How it works
 

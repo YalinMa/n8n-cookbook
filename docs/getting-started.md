@@ -60,7 +60,7 @@ Open the JSON file on GitHub, copy all of it and paste it straight onto the n8n 
 - Green checkmarks show which nodes ran. The number on each connection is how many **items** passed through.
 - Click any node to see its **Input** and **Output**. Switch between *Table*, *JSON* and *Schema* views.
 
-## 4. Add credentials (only recipes 03, 04 and 09)
+## 4. Add credentials (only recipes 03, 04, 09 and 15)
 
 Credentials are stored **encrypted inside n8n**, never in the workflow JSON. That's why the recipe files are safe to share.
 
@@ -71,11 +71,11 @@ Credentials are stored **encrypted inside n8n**, never in the workflow JSON. Tha
 
 You can manage all credentials later under **Overview → Credentials**.
 
-## 5. Go live: activate
+## 5. Go live: publish
 
-*Test workflow* runs once, right now. To make a workflow run **by itself** (on a schedule, or whenever a webhook or form is called), flip the **Inactive → Active** toggle at the top of the editor.
+*Test workflow* runs once, right now. To make a workflow run **by itself** (on a schedule, or whenever a webhook or form is called), click **Publish** at the top of the editor. (In n8n 1.x this was the **Inactive → Active** toggle.) After you edit a published workflow, publish again to put the new version live.
 
-| | Test run (manual) | Production run (active) |
+| | Test run (manual) | Production run (published) |
 |---|---|---|
 | Started by | You clicking *Test workflow* | Schedule, webhook, form, app event |
 | Webhook URL | `/webhook-test/...` (one call) | `/webhook/...` (always on) |

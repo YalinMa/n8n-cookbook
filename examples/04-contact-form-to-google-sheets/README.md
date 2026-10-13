@@ -38,7 +38,7 @@ Contact Form ─▶ Clean Up Data ─▶ Append Row to Sheet ─▶ Is Urgent? �
 2. Fill in the form and submit it.
 3. A new row appears in your sheet. If you answered *Yes* to "Is this urgent?", the run continues down the **true** branch.
 
-Activate the workflow and share the **Production URL** with real users. You can also embed it in a page with an `<iframe>`.
+Publish the workflow and share the **Production URL** with real users. You can also embed it in a page with an `<iframe>`.
 
 ## How it works
 
@@ -64,4 +64,4 @@ Activate the workflow and share the **Production URL** with real users. You can 
 | `Column names were updated after the node's setup` | Re-open the node and refresh the columns, or check the header row has no typos. |
 | Data lands in the wrong columns / extra columns | Headers must match the field names in **Clean Up Data** exactly, including case and spaces. |
 | Google says `redirect_uri_mismatch` (self-hosted) | Copy the *OAuth Redirect URL* shown in the n8n credential dialog into the Google Cloud OAuth client. |
-| Form says "Problem loading form" | The Test URL only works while you are listening (*Test workflow*); the Production URL only works when the workflow is active. |
+| Form says "Problem loading form" | The Test URL only works while you are listening (*Test workflow*); the Production URL only works when the workflow is published. |

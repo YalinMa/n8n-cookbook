@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## 10a · Error Alert\nThis is an **Error Workflow**. It never runs on its own: n8n starts it automatically when *another* workflow fails in production.\n\nTo use it for a workflow: open that workflow → **Settings** → **Error Workflow** → pick this one.\n\nPaste a Slack/Discord webhook URL into **Send Alert** and enable the node to get notified. You can also swap it for an Email or Telegram node.",
+        "content": "## 10a · Error Alert\nThis is an **Error Workflow**. It never runs on its own: n8n starts it automatically when *another* workflow fails in production.\n\n**Publish this workflow** (n8n 2.x only runs published error workflows). Then, for each workflow to watch: open it → **Settings** → **Error Workflow** → pick this one.\n\nPaste a Slack/Discord webhook URL into **Send Alert** and enable the node to get notified. You can also swap it for an Email or Telegram node.",
         "height": 320,
         "width": 460
       },
