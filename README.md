@@ -6,7 +6,7 @@
 ![n8n](https://img.shields.io/badge/n8n-2.x-EA4B71)
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue)
 
-> New to n8n? Start with **[Getting Started](docs/getting-started.md)** (n8n running in 2 minutes), then read **[Core Concepts](docs/core-concepts.md)** (the 8 ideas that make everything click).
+> New to n8n? Start with **[Getting Started](docs/getting-started.md)** (n8n running in 2 minutes), read **[Core Concepts](docs/core-concepts.md)** (the 8 ideas that make everything click), then use the **[Use-Case Guide](docs/use-cases.md)** to see what each recipe is for in real work and which ones to try first.
 
 ## Recipes
 
@@ -104,6 +104,7 @@ n8n-cookbook/
 ├── docs/
 │   ├── getting-started.md   # install n8n, import a workflow, add credentials
 │   ├── core-concepts.md     # items, expressions, triggers, credentials, executions…
+│   ├── use-cases.md         # what each recipe is for: real-world scenarios, learning paths
 │   ├── cheatsheet.md        # expression & node quick reference
 │   └── validation.md        # how the workflows are tested
 ├── examples/                # the 20 recipes

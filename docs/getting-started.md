@@ -85,4 +85,4 @@ You can manage all credentials later under **Overview → Credentials**.
 
 ## Next
 
-Read **[Core Concepts](core-concepts.md)**, then open [recipe 01](../examples/01-hello-webhook-api/).
+Read **[Core Concepts](core-concepts.md)** and the **[Use-Case Guide](use-cases.md)**, then open [recipe 01](../examples/01-hello-webhook-api/).
