@@ -1,5 +1,7 @@
 # Use-Case Guide: What Each Recipe Is For
 
+**English** · [简体中文](use-cases.zh-CN.md)
+
 This guide answers three questions for every recipe in the cookbook:
 
 1. **What does it do?** In plain language, no jargon.

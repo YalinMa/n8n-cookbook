@@ -1,5 +1,7 @@
 # 08 · Merge Data from Two APIs
 
+**English** · [简体中文](README.zh-CN.md)
+
 > Join data from two sources on a shared key (like a SQL `JOIN`) to build a combined report.
 
 | Difficulty | Time | Credentials | Nodes used |

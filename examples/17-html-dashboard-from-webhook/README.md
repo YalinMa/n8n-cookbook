@@ -1,5 +1,7 @@
 # 17 · HTML Dashboard from a Webhook
 
+**English** · [简体中文](README.zh-CN.md)
+
 > Serve a **live web page** straight from n8n: an exchange-rate dashboard with 30-day trend charts, and no hosting needed.
 
 | Difficulty | Time | Credentials | Nodes used |

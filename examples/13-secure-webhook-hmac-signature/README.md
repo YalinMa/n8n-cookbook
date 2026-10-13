@@ -1,5 +1,7 @@
 # 13 · Secure Webhook with HMAC Signature
 
+**English** · [简体中文](README.zh-CN.md)
+
 > Only accept webhook calls that are **signed** with your shared secret. This is the pattern used by GitHub, Stripe, Shopify, Slack and others.
 
 | Difficulty | Time | Credentials | Nodes used |

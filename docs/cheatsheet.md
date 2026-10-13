@@ -1,5 +1,7 @@
 # n8n Cheat Sheet
 
+**English** · [简体中文](cheatsheet.zh-CN.md)
+
 ## Expressions
 
 | What | Expression |

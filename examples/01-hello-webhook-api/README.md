@@ -1,5 +1,7 @@
 # 01 · Hello Webhook API
 
+**English** · [简体中文](README.zh-CN.md)
+
 > Turn n8n into a tiny HTTP API: receive a request, transform the data, send a JSON response.
 
 | Difficulty | Time | Credentials | Nodes used |

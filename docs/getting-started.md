@@ -1,5 +1,7 @@
 # Getting Started
 
+**English** · [简体中文](getting-started.zh-CN.md)
+
 This page gets you from zero to a running workflow in about 5 minutes.
 
 ## 1. Get n8n running
@@ -82,6 +84,21 @@ You can manage all credentials later under **Overview → Credentials**.
 | Shows in editor | Yes, live | Under **Executions** |
 | Saves static data (recipe 07) | No | Yes |
 | Triggers Error Workflow (recipe 10) | No | Yes |
+
+## 6. Sending to other chat apps
+
+Recipes 02, 06, 07, 10a, 12a and 16 post messages with an HTTP Request node. The body `{"text": …, "content": …}` works for **Slack** (`text`) and **Discord** (`content`) as is. Other chat apps expect a different JSON body: change *Send Body → JSON* to the matching line below and paste that app's webhook URL.
+
+| App | JSON body |
+|---|---|
+| Slack | `{{ JSON.stringify({ text: $json.text }) }}` |
+| Discord | `{{ JSON.stringify({ content: $json.text }) }}` |
+| Microsoft Teams (Workflows webhook) | `{{ JSON.stringify({ text: $json.text }) }}` |
+| Feishu / Lark (飞书) | `{{ JSON.stringify({ msg_type: 'text', content: { text: $json.text } }) }}` |
+| DingTalk (钉钉) | `{{ JSON.stringify({ msgtype: 'text', text: { content: $json.text } }) }}` |
+| WeCom (企业微信) | `{{ JSON.stringify({ msgtype: 'text', text: { content: $json.text } }) }}` |
+
+Feishu and DingTalk bots often have a **keyword** or **signature** security setting. With a keyword, make sure the message contains it. With signing, see recipe 13 for how HMAC signatures work.
 
 ## Next
 

@@ -1,5 +1,7 @@
 # 04 · Contact Form to Google Sheets
 
+**English** · [简体中文](README.zh-CN.md)
+
 > Publish a hosted web form with n8n and save every submission as a row in Google Sheets.
 
 | Difficulty | Time | Credentials | Nodes used |

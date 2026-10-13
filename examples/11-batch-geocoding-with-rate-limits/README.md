@@ -1,5 +1,7 @@
 # 11 · Batch Geocoding with Rate Limits
 
+**English** · [简体中文](README.zh-CN.md)
+
 > Process a long list through an API **in batches with pauses**, so you stay under rate limits, then collect all the results at the end.
 
 | Difficulty | Time | Credentials | Nodes used |

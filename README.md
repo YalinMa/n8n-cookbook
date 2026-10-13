@@ -1,5 +1,7 @@
 # 🍳 n8n Cookbook
 
+**English** · [简体中文](README.zh-CN.md)
+
 **20 practical, ready-to-import [n8n](https://n8n.io) workflows, from your first webhook to AI agents.** Each recipe comes with a step-by-step guide, an explanation of every node, and ideas for taking it further.
 
 [![Validate workflows](https://github.com/YalinMa/n8n-cookbook/actions/workflows/validate.yml/badge.svg)](https://github.com/YalinMa/n8n-cookbook/actions/workflows/validate.yml)
@@ -91,6 +93,7 @@ Each recipe introduces only a few new ideas and builds on the ones before. Pick 
 ```
 examples/NN-recipe-name/
 ├── README.md        # what it does, setup, how to test, node-by-node explanation, extensions, troubleshooting
+├── README.zh-CN.md  # the same in Simplified Chinese
 └── workflow.json    # import this into n8n (recipes 10 and 12 have two files; 14 and 18 include sample data)
 ```
 
@@ -100,7 +103,7 @@ Every workflow also has a **sticky note** inside the canvas that sums up the rec
 
 ```
 n8n-cookbook/
-├── README.md
+├── README.md / README.zh-CN.md   # every Markdown file has an English and a Simplified Chinese version
 ├── docs/
 │   ├── getting-started.md   # install n8n, import a workflow, add credentials
 │   ├── core-concepts.md     # items, expressions, triggers, credentials, executions…
@@ -122,7 +125,7 @@ Every workflow is checked in two ways:
 1. **Static checks** (`node scripts/validate.mjs`): valid JSON, unique node names and IDs, every connection points to a real node, a trigger is present, no orphan nodes, no credentials or secrets committed. These run on every push via GitHub Actions.
 2. **Real n8n run** (`./scripts/test-in-n8n.sh`): all 22 files are imported into a real n8n 2.42 instance and **executed** against the live public APIs. Webhook, form, chat, approval and dashboard recipes are called over HTTP on a running server. The AI recipes use a mock OpenAI server, so no key is needed. Each run is checked for the expected data, not just "no error".
 
-**Latest result: 64 / 64 checks passed.** Running the workflows for real caught several bugs that static checks missed. See [docs/validation.md](docs/validation.md) for the full matrix, the bugs found, and what isn't covered (real SMTP / Google / OpenAI accounts).
+**Latest result: 65 / 65 checks passed.** Running the workflows for real caught several bugs that static checks missed. See [docs/validation.md](docs/validation.md) for the full matrix, the bugs found, and what isn't covered (real SMTP / Google / OpenAI accounts).
 
 ## Contributing
 

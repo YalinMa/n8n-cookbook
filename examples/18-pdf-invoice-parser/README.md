@@ -1,5 +1,7 @@
 # 18 · PDF Invoice Parser
 
+**English** · [简体中文](README.zh-CN.md)
+
 > Extract the invoice number, dates, totals and line items from a PDF, then check the maths. No AI, no API key.
 
 | Difficulty | Time | Credentials | Nodes used |

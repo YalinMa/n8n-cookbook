@@ -1,5 +1,7 @@
 # 06 · Website Uptime Monitor
 
+**English** · [简体中文](README.zh-CN.md)
+
 > Check a list of websites every 5 minutes and send one alert that lists every site that is down.
 
 | Difficulty | Time | Credentials | Nodes used |

@@ -1,5 +1,7 @@
 # 02 · Daily Weather Report
 
+**English** · [简体中文](README.zh-CN.md)
+
 > Every morning, fetch the forecast from a public API and turn it into a friendly chat message.
 
 | Difficulty | Time | Credentials | Nodes used |

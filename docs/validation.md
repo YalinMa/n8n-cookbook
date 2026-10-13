@@ -1,5 +1,7 @@
 # Validation
 
+**English** · [简体中文](validation.zh-CN.md)
+
 Every workflow in this cookbook is checked in two layers.
 
 ## 1. Static checks: `scripts/validate.mjs`
@@ -19,7 +21,7 @@ It checks every `examples/*/*.json`:
 - at least one enabled trigger node
 - no orphan nodes (everything except triggers, sticky notes and AI sub-nodes has an incoming connection)
 - **no credentials or secrets** are committed (no `credentials` blocks; common API-key patterns rejected)
-- every example folder has a `README.md`
+- every example folder has a `README.md` and a `README.zh-CN.md`, and every English document has a Chinese twin with language-switcher links both ways
 
 ## 2. Real n8n run: `scripts/test-in-n8n.sh`
 

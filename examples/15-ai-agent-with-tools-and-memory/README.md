@@ -1,5 +1,7 @@
 # 15 · AI Agent with Tools & Memory
 
+**English** · [简体中文](README.zh-CN.md)
+
 > A chat assistant that **decides by itself** when to call tools (a live exchange-rate API and a calculator) and **remembers** the conversation.
 
 | Difficulty | Time | Credentials | Nodes used |

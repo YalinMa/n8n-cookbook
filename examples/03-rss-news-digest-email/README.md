@@ -1,5 +1,7 @@
 # 03 · RSS News Digest by Email
 
+**English** · [简体中文](README.zh-CN.md)
+
 > Read an RSS feed every weekday morning, keep the fresh stories and email them as one tidy digest.
 
 | Difficulty | Time | Credentials | Nodes used |

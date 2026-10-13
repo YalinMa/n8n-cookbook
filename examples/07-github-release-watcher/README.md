@@ -1,5 +1,7 @@
 # 07 · GitHub Release Watcher
 
+**English** · [简体中文](README.zh-CN.md)
+
 > Watch GitHub repositories and get notified **once** when a new release ships. No duplicates, no database.
 
 | Difficulty | Time | Credentials | Nodes used |

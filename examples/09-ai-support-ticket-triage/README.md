@@ -1,5 +1,7 @@
 # 09 · AI Support Ticket Triage
 
+**English** · [简体中文](README.zh-CN.md)
+
 > Let an LLM read incoming support tickets, extract structured information, and route each ticket to the right team.
 
 | Difficulty | Time | Credentials | Nodes used |

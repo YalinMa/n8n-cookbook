@@ -1,5 +1,7 @@
 # 19 · Mini CRM with Data Tables
 
+**English** · [简体中文](README.zh-CN.md)
+
 > Store data **inside n8n** with Data Tables, and expose it as a tiny REST API: add/update contacts and list them.
 
 | Difficulty | Time | Credentials | Nodes used |
@@ -69,10 +71,10 @@ Then open **Overview → Data tables → cookbook_contacts** to see and edit the
 | **Find Existing Contact** | Data Table → *Row → Get* where `email` equals the input, limit 1. *Always Output Data* is on, so a new contact gives an empty item instead of stopping the flow. |
 | **Merge With Existing** | For each field: the value sent in the request, else the stored value, else a default. `stage` must be one of `lead, qualified, customer, lost`. |
 | **Upsert Contact** | Data Table → *Row → Upsert*, matching on `email`. Returns the stored row including `id` and `updatedAt`. |
-
-> ⚠️ **Upsert pitfall:** an upsert writes *every* mapped column. Without the *Find + Merge* step, a request that only sends `{"email": …, "stage": "qualified"}` would overwrite `name` and `company` with empty values. The automated test for this recipe caught exactly that.
 | **Get All Rows** | Data Table → *Row → Get*, *Return All*. *Settings → Always Output Data* is on, so an empty table still produces one (empty) item. |
 | **Filter & Shape** | Applies the optional `?stage=` filter and returns `{count, stage, contacts}`. |
+
+> ⚠️ **Upsert pitfall:** an upsert writes *every* mapped column. Without the *Find + Merge* step, a request that only sends `{"email": …, "stage": "qualified"}` would overwrite `name` and `company` with empty values. The automated test for this recipe caught exactly that.
 
 ## Data Tables vs. other storage
 

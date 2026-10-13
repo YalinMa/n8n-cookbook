@@ -1,5 +1,7 @@
 # 10 · Error Handling & Alerts
 
+**English** · [简体中文](README.zh-CN.md)
+
 > Make workflows resilient: retry flaky calls, fall back gracefully, and get alerted when something really breaks.
 
 | Difficulty | Time | Credentials | Nodes used |

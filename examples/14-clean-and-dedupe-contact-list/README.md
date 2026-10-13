@@ -1,5 +1,7 @@
 # 14 · Clean & Deduplicate a Contact List
 
+**English** · [简体中文](README.zh-CN.md)
+
 > Download a messy CSV, normalise every field, reject bad rows, remove duplicates and export a clean file.
 
 | Difficulty | Time | Credentials | Nodes used |

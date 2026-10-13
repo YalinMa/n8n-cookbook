@@ -1,5 +1,7 @@
 # 16 · Human-in-the-Loop Expense Approval
 
+**English** · [简体中文](README.zh-CN.md)
+
 > Pause a workflow until a person clicks **Approve** or **Reject**, then continue the same execution down the right path.
 
 | Difficulty | Time | Credentials | Nodes used |

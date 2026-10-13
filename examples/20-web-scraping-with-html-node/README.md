@@ -1,5 +1,7 @@
 # 20 · Web Scraping with the HTML Node
 
+**English** · [简体中文](README.zh-CN.md)
+
 > Scrape a product catalogue that has no API. Visit several pages politely, extract data with **CSS selectors**, clean it and export a CSV.
 
 | Difficulty | Time | Credentials | Nodes used |

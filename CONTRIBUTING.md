@@ -1,5 +1,7 @@
 # Contributing
 
+**English** · [简体中文](CONTRIBUTING.zh-CN.md)
+
 Thanks for helping make n8n easier to learn!
 
 ## Adding a recipe
@@ -15,7 +17,8 @@ Thanks for helping make n8n easier to learn!
    - Prefer free, key-less public APIs so people can run it immediately.
    - If the workflow uses a schedule, also add a **Manual Trigger** for testing.
 4. Write `README.md` following the existing recipes: summary table, ASCII flow, *What you'll learn*, *Setup*, *Try it*, *How it works*, *Ideas to extend*, *Troubleshooting*.
-5. Add a row to the recipe table in the main `README.md`.
+   Also add `README.zh-CN.md`, the Simplified Chinese version. Keep both files in sync: same sections, same links (pointing to the `.zh-CN.md` versions), and n8n UI labels in English with a Chinese explanation. The language switcher goes on the line after the title.
+5. Add a row to the recipe table in the main `README.md` and `README.zh-CN.md`.
 6. Run the checks:
 
    ```bash

@@ -1,5 +1,7 @@
 # 12 · Reusable Notification Sub-workflow
 
+**English** · [简体中文](README.zh-CN.md)
+
 > Build logic **once** and call it from any workflow, like a function. Here: one standard way to send notifications.
 
 | Difficulty | Time | Credentials | Nodes used |

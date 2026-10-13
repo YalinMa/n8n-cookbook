@@ -1,5 +1,7 @@
 # Core Concepts
 
+**English** · [简体中文](core-concepts.zh-CN.md)
+
 Eight ideas explain about 90% of how n8n works. Each one links to the recipe where you'll see it in action.
 
 ## 1. Workflows are made of nodes
