@@ -1,0 +1,148 @@
+{
+  "name": "02 · Daily Weather Report",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 02 · Daily Weather Report\nEvery morning at 07:30, fetch today's forecast from the free **Open-Meteo** API (no API key) and turn it into a short, readable message.\n\n- Change the city in **Settings**\n- To post the message to Slack / Discord / Teams, paste an *incoming webhook URL* into **Send to Chat** and enable the node (it is disabled by default)\n- **Manual Trigger** lets you test without waiting for the schedule",
+        "height": 320,
+        "width": 460
+      },
+      "id": "02000000-0000-4000-8000-000000000001",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-80, -300]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "triggerAtHour": 7,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "id": "02000000-0000-4000-8000-000000000002",
+      "name": "Every Day 07:30",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 60]
+    },
+    {
+      "parameters": {},
+      "id": "02000000-0000-4000-8000-000000000003",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 240]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "02000000-0000-4000-8000-000000000101",
+              "name": "city",
+              "value": "Berlin",
+              "type": "string"
+            },
+            {
+              "id": "02000000-0000-4000-8000-000000000102",
+              "name": "latitude",
+              "value": 52.52,
+              "type": "number"
+            },
+            {
+              "id": "02000000-0000-4000-8000-000000000103",
+              "name": "longitude",
+              "value": 13.41,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "02000000-0000-4000-8000-000000000004",
+      "name": "Settings",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [240, 150]
+    },
+    {
+      "parameters": {
+        "url": "https://api.open-meteo.com/v1/forecast",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "latitude", "value": "={{ $json.latitude }}" },
+            { "name": "longitude", "value": "={{ $json.longitude }}" },
+            { "name": "current", "value": "temperature_2m,weather_code" },
+            {
+              "name": "daily",
+              "value": "temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code"
+            },
+            { "name": "timezone", "value": "auto" },
+            { "name": "forecast_days", "value": "1" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "02000000-0000-4000-8000-000000000005",
+      "name": "Get Forecast",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 150]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Turn the raw Open-Meteo response into a friendly message.\n// WMO weather codes: https://open-meteo.com/en/docs#weathervariables\nconst describe = (code) => {\n  if (code === 0) return '☀️ Clear sky';\n  if (code <= 3) return '⛅ Partly cloudy';\n  if (code <= 48) return '🌫️ Fog';\n  if (code <= 67) return '🌧️ Rain';\n  if (code <= 77) return '❄️ Snow';\n  if (code <= 82) return '🌦️ Rain showers';\n  return '⛈️ Thunderstorm';\n};\n\nconst settings = $('Settings').first().json;\nconst w = $input.first().json;\nconst daily = w.daily;\n\nconst rainChance = daily.precipitation_probability_max[0];\nconst text = [\n  `Good morning! Weather for ${settings.city} today (${daily.time[0]}):`,\n  `${describe(daily.weather_code[0])}`,\n  `🌡️ ${daily.temperature_2m_min[0]}°C – ${daily.temperature_2m_max[0]}°C (now ${w.current.temperature_2m}°C)`,\n  `☔ Chance of rain: ${rainChance}%`,\n  rainChance >= 50 ? '👉 Take an umbrella!' : '👉 No umbrella needed.',\n].join('\\n');\n\nreturn [{ json: { city: settings.city, rainChance, text } }];"
+      },
+      "id": "02000000-0000-4000-8000-000000000006",
+      "name": "Format Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 150]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hooks.slack.com/services/REPLACE/WITH/YOUR-WEBHOOK",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.text, content: $json.text }) }}",
+        "options": {}
+      },
+      "id": "02000000-0000-4000-8000-000000000007",
+      "name": "Send to Chat",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 150],
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "Every Day 07:30": {
+      "main": [[{ "node": "Settings", "type": "main", "index": 0 }]]
+    },
+    "Manual Trigger": {
+      "main": [[{ "node": "Settings", "type": "main", "index": 0 }]]
+    },
+    "Settings": {
+      "main": [[{ "node": "Get Forecast", "type": "main", "index": 0 }]]
+    },
+    "Get Forecast": {
+      "main": [[{ "node": "Format Message", "type": "main", "index": 0 }]]
+    },
+    "Format Message": {
+      "main": [[{ "node": "Send to Chat", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "tags": []
+}

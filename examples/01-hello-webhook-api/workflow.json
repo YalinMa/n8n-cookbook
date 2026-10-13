@@ -1,0 +1,96 @@
+{
+  "name": "01 · Hello Webhook API",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 01 · Hello Webhook API\nTurns n8n into a tiny HTTP API.\n\n1. **Webhook** receives a POST request with JSON like `{\"name\": \"Ada\"}`\n2. **Build Greeting** creates new fields from the request body\n3. **Respond to Webhook** sends JSON back to the caller\n\nClick **Test workflow**, then call the *Test URL* shown in the Webhook node.",
+        "height": 300,
+        "width": 420
+      },
+      "id": "01000000-0000-4000-8000-000000000001",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-60, -260]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hello",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "01000000-0000-4000-8000-000000000002",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 100],
+      "webhookId": "01000000-0000-4000-8000-0000000000aa"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "01000000-0000-4000-8000-000000000101",
+              "name": "name",
+              "value": "={{ $json.body.name || 'stranger' }}",
+              "type": "string"
+            },
+            {
+              "id": "01000000-0000-4000-8000-000000000102",
+              "name": "greeting",
+              "value": "=Hello, {{ $json.body.name || 'stranger' }}! 👋",
+              "type": "string"
+            },
+            {
+              "id": "01000000-0000-4000-8000-000000000103",
+              "name": "nameLength",
+              "value": "={{ ($json.body.name || 'stranger').length }}",
+              "type": "number"
+            },
+            {
+              "id": "01000000-0000-4000-8000-000000000104",
+              "name": "receivedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "01000000-0000-4000-8000-000000000003",
+      "name": "Build Greeting",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [220, 100]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "01000000-0000-4000-8000-000000000004",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [440, 100]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Build Greeting", "type": "main", "index": 0 }]]
+    },
+    "Build Greeting": {
+      "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "tags": []
+}

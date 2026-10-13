@@ -1,0 +1,406 @@
+{
+  "name": "09 · AI Support Ticket Triage",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 09 · AI Support Ticket Triage\nA support ticket arrives by webhook. An LLM reads it and returns **structured data** (category, priority, sentiment, one-line summary). The ticket is then routed to the right team.\n\n**Needs:** an OpenAI credential on **OpenAI Chat Model** (any chat model works — swap it for Anthropic, Gemini, Ollama… by replacing that one node).\n\nThe **Switch** outputs end in placeholders: replace them with Slack, Jira, Zendesk, email…",
+        "height": 340,
+        "width": 500
+      },
+      "id": "09000000-0000-4000-8000-000000000001",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -380
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "support-ticket",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "09000000-0000-4000-8000-000000000002",
+      "name": "New Ticket",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        100
+      ],
+      "webhookId": "09000000-0000-4000-8000-0000000000aa"
+    },
+    {
+      "parameters": {
+        "text": "=Subject: {{ $json.body.subject }}\n\nMessage:\n{{ $json.body.message }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "category",
+              "description": "Exactly one of: billing, technical, sales, other",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "name": "priority",
+              "description": "Exactly one of: low, medium, high. Use high for outages, data loss, security issues or very angry customers.",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "name": "sentiment",
+              "description": "Exactly one of: positive, neutral, negative",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "name": "summary",
+              "description": "One short sentence (max 20 words) summarising what the customer needs",
+              "required": true,
+              "type": "string"
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "You are a support triage assistant for a SaaS company. Read the customer ticket and extract the requested attributes. Only use the allowed values where a list is given."
+        }
+      },
+      "id": "09000000-0000-4000-8000-000000000003",
+      "name": "Extract Ticket Info",
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {
+          "temperature": 0
+        }
+      },
+      "id": "09000000-0000-4000-8000-000000000004",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "09000000-0000-4000-8000-000000000101",
+              "name": "email",
+              "value": "={{ $('New Ticket').item.json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "09000000-0000-4000-8000-000000000102",
+              "name": "subject",
+              "value": "={{ $('New Ticket').item.json.body.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "09000000-0000-4000-8000-000000000103",
+              "name": "category",
+              "value": "={{ $json.output.category.toLowerCase() }}",
+              "type": "string"
+            },
+            {
+              "id": "09000000-0000-4000-8000-000000000104",
+              "name": "priority",
+              "value": "={{ $json.output.priority.toLowerCase() }}",
+              "type": "string"
+            },
+            {
+              "id": "09000000-0000-4000-8000-000000000105",
+              "name": "sentiment",
+              "value": "={{ $json.output.sentiment.toLowerCase() }}",
+              "type": "string"
+            },
+            {
+              "id": "09000000-0000-4000-8000-000000000106",
+              "name": "summary",
+              "value": "={{ $json.output.summary }}",
+              "type": "string"
+            },
+            {
+              "id": "09000000-0000-4000-8000-000000000107",
+              "name": "ticketId",
+              "value": "=T-{{ $now.toMillis() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "09000000-0000-4000-8000-000000000005",
+      "name": "Build Ticket",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        560,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, ticketId: $json.ticketId, category: $json.category, priority: $json.priority, summary: $json.summary }) }}",
+        "options": {}
+      },
+      "id": "09000000-0000-4000-8000-000000000006",
+      "name": "Reply to Sender",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        780,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "09000000-0000-4000-8000-000000000108",
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "billing",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Billing"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "09000000-0000-4000-8000-000000000109",
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "technical",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Technical"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "09000000-0000-4000-8000-000000000110",
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "sales",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Sales"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Other"
+        }
+      },
+      "id": "09000000-0000-4000-8000-000000000007",
+      "name": "Route by Category",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1000,
+        100
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "09000000-0000-4000-8000-000000000008",
+      "name": "Billing Team",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1260,
+        -80
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "09000000-0000-4000-8000-000000000009",
+      "name": "Tech Support",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1260,
+        60
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "09000000-0000-4000-8000-000000000010",
+      "name": "Sales Team",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1260,
+        200
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "09000000-0000-4000-8000-000000000011",
+      "name": "General Inbox",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1260,
+        340
+      ]
+    }
+  ],
+  "connections": {
+    "New Ticket": {
+      "main": [
+        [
+          {
+            "node": "Extract Ticket Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extract Ticket Info",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Ticket Info": {
+      "main": [
+        [
+          {
+            "node": "Build Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Ticket": {
+      "main": [
+        [
+          {
+            "node": "Reply to Sender",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply to Sender": {
+      "main": [
+        [
+          {
+            "node": "Route by Category",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Category": {
+      "main": [
+        [
+          {
+            "node": "Billing Team",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tech Support",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sales Team",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "General Inbox",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "tags": []
+}

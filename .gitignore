@@ -1,0 +1,4 @@
+.DS_Store
+node_modules/
+.n8n-test/
+*.log

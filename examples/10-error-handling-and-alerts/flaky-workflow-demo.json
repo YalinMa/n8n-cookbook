@@ -1,0 +1,175 @@
+{
+  "name": "10b · Error Handling Demo",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 10b · Error Handling Demo\nThree ways to deal with failures:\n\n1. **Retry** – *Call Unreliable API* → Settings → *Retry On Fail* (3 tries, 2 s apart)\n2. **Error branch** – the same node has *On Error: Continue (using error output)*, so a failure goes down the red path to **Use Fallback Data** instead of stopping\n3. **Fail loudly** – set `failOnPurpose` to `true` in **Settings** and **Stop and Error** fails the run, which triggers your *Error Workflow* (10a)\n\nThe API URL always returns HTTP 500, so you will see the fallback path.",
+        "height": 400,
+        "width": 520
+      },
+      "id": "10b00000-0000-4000-8000-000000000001",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-80, -440]
+    },
+    {
+      "parameters": {},
+      "id": "10b00000-0000-4000-8000-000000000002",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 100]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "10b00000-0000-4000-8000-000000000101",
+              "name": "failOnPurpose",
+              "value": false,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "10b00000-0000-4000-8000-000000000003",
+      "name": "Settings",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [220, 100]
+    },
+    {
+      "parameters": {
+        "url": "https://httpbin.org/status/500",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "10b00000-0000-4000-8000-000000000004",
+      "name": "Call Unreliable API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 100],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "10b00000-0000-4000-8000-000000000102", "name": "source", "value": "api", "type": "string" },
+            { "id": "10b00000-0000-4000-8000-000000000103", "name": "data", "value": "={{ $json }}", "type": "object" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "10b00000-0000-4000-8000-000000000005",
+      "name": "Use API Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [700, 0]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "10b00000-0000-4000-8000-000000000104", "name": "source", "value": "fallback", "type": "string" },
+            { "id": "10b00000-0000-4000-8000-000000000105", "name": "data", "value": "={{ { note: 'cached default values' } }}", "type": "object" },
+            { "id": "10b00000-0000-4000-8000-000000000106", "name": "apiError", "value": "={{ $json.error?.message ?? 'unknown error' }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "10b00000-0000-4000-8000-000000000006",
+      "name": "Use Fallback Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [700, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "10b00000-0000-4000-8000-000000000107",
+              "leftValue": "={{ $('Settings').first().json.failOnPurpose }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "10b00000-0000-4000-8000-000000000007",
+      "name": "Fail on Purpose?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [960, 100]
+    },
+    {
+      "parameters": {
+        "errorMessage": "=Stopped on purpose (data source: {{ $json.source }}). This failure triggers the Error Workflow."
+      },
+      "id": "10b00000-0000-4000-8000-000000000008",
+      "name": "Stop and Error",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [1200, 0]
+    },
+    {
+      "parameters": {},
+      "id": "10b00000-0000-4000-8000-000000000009",
+      "name": "Continue Normally",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1200, 200]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{ "node": "Settings", "type": "main", "index": 0 }]]
+    },
+    "Settings": {
+      "main": [[{ "node": "Call Unreliable API", "type": "main", "index": 0 }]]
+    },
+    "Call Unreliable API": {
+      "main": [
+        [{ "node": "Use API Data", "type": "main", "index": 0 }],
+        [{ "node": "Use Fallback Data", "type": "main", "index": 0 }]
+      ]
+    },
+    "Use API Data": {
+      "main": [[{ "node": "Fail on Purpose?", "type": "main", "index": 0 }]]
+    },
+    "Use Fallback Data": {
+      "main": [[{ "node": "Fail on Purpose?", "type": "main", "index": 0 }]]
+    },
+    "Fail on Purpose?": {
+      "main": [
+        [{ "node": "Stop and Error", "type": "main", "index": 0 }],
+        [{ "node": "Continue Normally", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "tags": []
+}

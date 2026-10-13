@@ -1,0 +1,140 @@
+{
+  "name": "07 · GitHub Release Watcher",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 07 · GitHub Release Watcher\nEvery hour, check the latest release of a few GitHub repositories and notify you **only when a release is new** (no duplicate alerts).\n\nThe memory lives in *workflow static data* (see **Keep Only New Releases**).\n\n⚠️ Static data is only saved for **production runs** (workflow active + schedule). Manual test runs always start with empty memory, so every release looks \"new\" when you click *Test workflow*. That is expected.",
+        "height": 340,
+        "width": 480
+      },
+      "id": "07000000-0000-4000-8000-000000000001",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-80, -320]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "id": "07000000-0000-4000-8000-000000000002",
+      "name": "Every Hour",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 60]
+    },
+    {
+      "parameters": {},
+      "id": "07000000-0000-4000-8000-000000000003",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 240]
+    },
+    {
+      "parameters": {
+        "jsCode": "// The repositories to watch, as \"owner/name\".\nconst repos = [\n  'n8n-io/n8n',\n  'nodejs/node',\n  'microsoft/vscode',\n];\n\nreturn repos.map(repo => ({ json: { repo } }));"
+      },
+      "id": "07000000-0000-4000-8000-000000000004",
+      "name": "Repos to Watch",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 150]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{ $json.repo }}/releases/latest",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Accept", "value": "application/vnd.github+json" },
+            { "name": "User-Agent", "value": "n8n-cookbook" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "07000000-0000-4000-8000-000000000005",
+      "name": "Get Latest Release",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 150]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Workflow static data survives between production executions.\n// We store the last tag we have seen for each repo.\nconst memory = $getWorkflowStaticData('global');\nmemory.lastTags = memory.lastTags || {};\n\nconst newReleases = [];\n\nfor (const item of $input.all()) {\n  const release = item.json;\n  // html_url looks like https://github.com/<owner>/<repo>/releases/tag/<tag>\n  const repo = release.html_url.split('/').slice(3, 5).join('/');\n\n  if (memory.lastTags[repo] !== release.tag_name) {\n    memory.lastTags[repo] = release.tag_name;\n    newReleases.push({\n      json: {\n        repo,\n        tag: release.tag_name,\n        name: release.name || release.tag_name,\n        url: release.html_url,\n        publishedAt: release.published_at,\n      },\n    });\n  }\n}\n\n// Returning an empty list stops the workflow here: nothing new, no alert.\nreturn newReleases;"
+      },
+      "id": "07000000-0000-4000-8000-000000000006",
+      "name": "Keep Only New Releases",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 150]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "07000000-0000-4000-8000-000000000101",
+              "name": "text",
+              "value": "=🚀 New release of *{{ $json.repo }}*: {{ $json.name }}\n{{ $json.url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "07000000-0000-4000-8000-000000000007",
+      "name": "Build Message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [900, 150]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hooks.slack.com/services/REPLACE/WITH/YOUR-WEBHOOK",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.text, content: $json.text }) }}",
+        "options": {}
+      },
+      "id": "07000000-0000-4000-8000-000000000008",
+      "name": "Send to Chat",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 150],
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "Every Hour": {
+      "main": [[{ "node": "Repos to Watch", "type": "main", "index": 0 }]]
+    },
+    "Manual Trigger": {
+      "main": [[{ "node": "Repos to Watch", "type": "main", "index": 0 }]]
+    },
+    "Repos to Watch": {
+      "main": [[{ "node": "Get Latest Release", "type": "main", "index": 0 }]]
+    },
+    "Get Latest Release": {
+      "main": [[{ "node": "Keep Only New Releases", "type": "main", "index": 0 }]]
+    },
+    "Keep Only New Releases": {
+      "main": [[{ "node": "Build Message", "type": "main", "index": 0 }]]
+    },
+    "Build Message": {
+      "main": [[{ "node": "Send to Chat", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "tags": []
+}

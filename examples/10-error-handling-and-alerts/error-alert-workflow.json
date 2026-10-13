@@ -1,0 +1,74 @@
+{
+  "name": "10a · Error Alert (Error Workflow)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 10a · Error Alert\nThis is an **Error Workflow**. It never runs on its own: n8n starts it automatically when *another* workflow fails in production.\n\nTo use it for a workflow: open that workflow → **Settings** → **Error Workflow** → pick this one.\n\nPaste a Slack/Discord webhook URL into **Send Alert** and enable the node to get notified. You can also swap it for an Email or Telegram node.",
+        "height": 320,
+        "width": 460
+      },
+      "id": "10a00000-0000-4000-8000-000000000001",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-80, -320]
+    },
+    {
+      "parameters": {},
+      "id": "10a00000-0000-4000-8000-000000000002",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [0, 100]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "10a00000-0000-4000-8000-000000000101",
+              "name": "text",
+              "value": "=❌ Workflow *{{ $json.workflow.name }}* failed\n• Node: {{ $json.execution.lastNodeExecuted }}\n• Error: {{ $json.execution.error.message }}\n• Mode: {{ $json.execution.mode }}\n• Details: {{ $json.execution.url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "10a00000-0000-4000-8000-000000000003",
+      "name": "Build Alert",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [220, 100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hooks.slack.com/services/REPLACE/WITH/YOUR-WEBHOOK",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.text, content: $json.text }) }}",
+        "options": {}
+      },
+      "id": "10a00000-0000-4000-8000-000000000004",
+      "name": "Send Alert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 100],
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [[{ "node": "Build Alert", "type": "main", "index": 0 }]]
+    },
+    "Build Alert": {
+      "main": [[{ "node": "Send Alert", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "tags": []
+}

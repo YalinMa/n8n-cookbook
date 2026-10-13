@@ -1,0 +1,175 @@
+{
+  "name": "05 · API Data to CSV Export",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 05 · API Data to CSV Export\nPull **all** products from a paginated REST API (DummyJSON, no key needed), keep the best-rated ones that are in stock, pick the columns you care about, sort them and download a CSV.\n\nKey ideas: **pagination** inside the HTTP Request node, **Split Out** (one item → many), **Filter**, **Sort**, **Convert to File**.\n\nAfter running, open **Convert to CSV** → *Binary* tab → Download.",
+        "height": 320,
+        "width": 480
+      },
+      "id": "05000000-0000-4000-8000-000000000001",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-80, -300]
+    },
+    {
+      "parameters": {},
+      "id": "05000000-0000-4000-8000-000000000002",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 100]
+    },
+    {
+      "parameters": {
+        "url": "https://dummyjson.com/products",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "limit", "value": "50" },
+            { "name": "select", "value": "title,brand,category,price,rating,stock" }
+          ]
+        },
+        "options": {
+          "pagination": {
+            "pagination": {
+              "parameters": {
+                "parameters": [
+                  { "name": "skip", "value": "={{ $pageCount * 50 }}" }
+                ]
+              },
+              "paginationCompleteWhen": "other",
+              "completeExpression": "={{ $response.body.skip + $response.body.limit >= $response.body.total }}",
+              "limitPagesFetched": true,
+              "maxRequests": 20
+            }
+          }
+        }
+      },
+      "id": "05000000-0000-4000-8000-000000000003",
+      "name": "Fetch All Products",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 100]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "products",
+        "options": {}
+      },
+      "id": "05000000-0000-4000-8000-000000000004",
+      "name": "One Item per Product",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [440, 100]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "05000000-0000-4000-8000-000000000101",
+              "leftValue": "={{ $json.rating }}",
+              "rightValue": 4.5,
+              "operator": { "type": "number", "operation": "gte" }
+            },
+            {
+              "id": "05000000-0000-4000-8000-000000000102",
+              "leftValue": "={{ $json.stock }}",
+              "rightValue": 0,
+              "operator": { "type": "number", "operation": "gt" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "05000000-0000-4000-8000-000000000005",
+      "name": "Rating ≥ 4.5 and In Stock",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [660, 100]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "05000000-0000-4000-8000-000000000103", "name": "ID", "value": "={{ $json.id }}", "type": "number" },
+            { "id": "05000000-0000-4000-8000-000000000104", "name": "Product", "value": "={{ $json.title }}", "type": "string" },
+            { "id": "05000000-0000-4000-8000-000000000105", "name": "Brand", "value": "={{ $json.brand ?? '' }}", "type": "string" },
+            { "id": "05000000-0000-4000-8000-000000000106", "name": "Category", "value": "={{ $json.category }}", "type": "string" },
+            { "id": "05000000-0000-4000-8000-000000000107", "name": "Price (USD)", "value": "={{ $json.price }}", "type": "number" },
+            { "id": "05000000-0000-4000-8000-000000000108", "name": "Rating", "value": "={{ $json.rating }}", "type": "number" },
+            { "id": "05000000-0000-4000-8000-000000000109", "name": "Stock", "value": "={{ $json.stock }}", "type": "number" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "05000000-0000-4000-8000-000000000006",
+      "name": "Pick Columns",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [880, 100]
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            { "fieldName": "Rating", "order": "descending" },
+            { "fieldName": "Price (USD)" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "05000000-0000-4000-8000-000000000007",
+      "name": "Sort by Rating",
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [1100, 100]
+    },
+    {
+      "parameters": {
+        "options": {
+          "fileName": "=top-products-{{ $now.toFormat('yyyy-MM-dd') }}.csv"
+        }
+      },
+      "id": "05000000-0000-4000-8000-000000000008",
+      "name": "Convert to CSV",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [1320, 100]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{ "node": "Fetch All Products", "type": "main", "index": 0 }]]
+    },
+    "Fetch All Products": {
+      "main": [[{ "node": "One Item per Product", "type": "main", "index": 0 }]]
+    },
+    "One Item per Product": {
+      "main": [[{ "node": "Rating ≥ 4.5 and In Stock", "type": "main", "index": 0 }]]
+    },
+    "Rating ≥ 4.5 and In Stock": {
+      "main": [[{ "node": "Pick Columns", "type": "main", "index": 0 }]]
+    },
+    "Pick Columns": {
+      "main": [[{ "node": "Sort by Rating", "type": "main", "index": 0 }]]
+    },
+    "Sort by Rating": {
+      "main": [[{ "node": "Convert to CSV", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "tags": []
+}
